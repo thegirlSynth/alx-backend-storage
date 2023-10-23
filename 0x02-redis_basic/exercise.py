@@ -43,6 +43,16 @@ def call_history(method: Callable) -> Callable:
 
 
 class Cache:
+    """
+    This is a class that demostrates the use of redis for caching.
+
+    It has the following methods:
+     - store, to store a piece of data usin redis
+     - get, to fetch a piecce of previously stored data
+     - get_str & get_int, to correctly parameterize Cache.get, and
+     - replay, to display the history of a given function.
+    """
+
     def __init__(self):
         """
         Initializes the Cache class by storing an instance
@@ -97,8 +107,11 @@ class Cache:
         ins = self._redis.lrange("{}:inputs".format(fn.__qualname__), 0, -1)
         outs = self._redis.lrange("{}:outputs".format(fn.__qualname__), 0, -1)
 
-        print(f"Cache.store was called {len(ins)} times:")
-        for i in range(len(ins)):
-            input = ins[i].decode("utf-8")
-            output = outs[i].decode("utf-8")
-            print(f"Cache.store(*{str(input)}) -> {str(output)}")
+        # Decoding the values
+
+        inputs = [input.decode("utf-8") for input in ins]
+        outputs = [output.decode("utf-8") for output in outs]
+
+        print(f"{fn.__qualname__} was called {len(ins)} times:")
+        for input, output in zip(inputs, outputs):
+            print(f"Cache.store(*{input}) -> {output}")
