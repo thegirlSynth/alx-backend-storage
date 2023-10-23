@@ -10,6 +10,10 @@ import uuid
 
 
 def count_calls(method: Callable) -> Callable:
+    """
+    This decorator function keeps track of the number of times
+    a function is called.
+    """
     key = method.__qualname__
 
     @wraps(method)
@@ -21,6 +25,10 @@ def count_calls(method: Callable) -> Callable:
 
 
 def call_history(method: Callable) -> Callable:
+    """
+    This decorator function stores the history of inputs and outputs
+    for a particular function.
+    """
     input_key = method.__qualname__ + ":inputs"
     output_key = method.__qualname__ + ":outputs"
 
@@ -81,3 +89,16 @@ class Cache:
         for ints.
         """
         return self.get(key, int)
+
+    def replay(self, fn):
+        """
+        Displays the history of calls of a particular function.
+        """
+        ins = self._redis.lrange("{}:inputs".format(fn.__qualname__), 0, -1)
+        outs = self._redis.lrange("{}:outputs".format(fn.__qualname__), 0, -1)
+
+        print(f"Cache.store was called {len(ins)} times:")
+        for i in range(len(ins)):
+            input = ins[i].decode("utf-8")
+            output = outs[i].decode("utf-8")
+            print(f"Cache.store(*{str(input)}) -> {str(output)}")
