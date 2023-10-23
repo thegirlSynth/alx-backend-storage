@@ -100,18 +100,21 @@ class Cache:
         """
         return self.get(key, int)
 
-    def replay(self, fn):
-        """
-        Displays the history of calls of a particular function.
-        """
-        ins = self._redis.lrange("{}:inputs".format(fn.__qualname__), 0, -1)
-        outs = self._redis.lrange("{}:outputs".format(fn.__qualname__), 0, -1)
 
-        # Decoding the values
+def replay(fn: Callable):
+    """
+    Displays the history of calls of a particular function.
+    """
 
-        inputs = [input.decode("utf-8") for input in ins]
-        outputs = [output.decode("utf-8") for output in outs]
+    cache = redis.Redis()
+    ins = cache.lrange("{}:inputs".format(fn.__qualname__), 0, -1)
+    outs = cache.lrange("{}:outputs".format(fn.__qualname__), 0, -1)
 
-        print(f"{fn.__qualname__} was called {len(ins)} times:")
-        for input, output in zip(inputs, outputs):
-            print(f"Cache.store(*{input}) -> {output}")
+    # Decoding the values
+
+    inputs = [input.decode("utf-8") for input in ins]
+    outputs = [output.decode("utf-8") for output in outs]
+
+    print(f"{fn.__qualname__} was called {len(ins)} times:")
+    for input, output in zip(inputs, outputs):
+        print(f"Cache.store(*{input}) -> {output}")
